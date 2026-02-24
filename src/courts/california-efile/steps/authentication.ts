@@ -11,7 +11,7 @@ export async function authenticate(ctx: StepContext): Promise<void> {
 
   // Navigate to landing page
   log('Navigating to California eFile...');
-  await page.goto(caseConfig.landingUrl, { waitUntil: 'networkidle' });
+  await page.goto(caseConfig.landingUrl, { waitUntil: 'networkidle', timeout: 60000 });
   log('Landing page loaded');
 
   // Click "Sign in to your account"

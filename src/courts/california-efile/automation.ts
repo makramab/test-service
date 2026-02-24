@@ -28,7 +28,7 @@ export class CaliforniaEFileAutomation extends BaseCourtAutomation {
     super({
       headless: headlessMode,
       slowMo: parseInt(process.env.SLOW_MO || '0', 10),
-      timeout: 5000,
+      timeout: parseInt(process.env.AUTOMATION_TIMEOUT || '30000', 10),
     });
 
     // Build fully resolved config: defaults ← overrides
