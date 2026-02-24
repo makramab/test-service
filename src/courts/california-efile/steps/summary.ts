@@ -21,11 +21,13 @@ export async function extractSummary(ctx: StepContext): Promise<string | null> {
     draftText = await draftElement.textContent();
     log(`Draft number found: ${draftText}`);
 
-    // Save to file
-    const filename = `draft-${Date.now()}-${randomUUID()}.txt`;
-    const draftFilePath = path.join(__dirname, '../../../../logs', filename);
-    fs.writeFileSync(draftFilePath, draftText || '');
-    log(`Draft number saved to: ${draftFilePath}`);
+    // Save to file (only if SAVE_LOGS enabled)
+    if (process.env.SAVE_LOGS !== 'false') {
+      const filename = `draft-${Date.now()}-${randomUUID()}.txt`;
+      const draftFilePath = path.join(__dirname, '../../../../logs', filename);
+      fs.writeFileSync(draftFilePath, draftText || '');
+      log(`Draft number saved to: ${draftFilePath}`);
+    }
   } catch (error) {
     log(`Failed to extract draft number: ${error}`);
   }

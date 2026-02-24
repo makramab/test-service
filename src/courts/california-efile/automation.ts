@@ -25,10 +25,14 @@ export class CaliforniaEFileAutomation extends BaseCourtAutomation {
       ? overrides.headless
       : process.env.HEADLESS !== 'false';
 
+    const saveLogs = process.env.SAVE_LOGS !== 'false';
+
     super({
       headless: headlessMode,
       slowMo: parseInt(process.env.SLOW_MO || '0', 10),
       timeout: parseInt(process.env.AUTOMATION_TIMEOUT || '30000', 10),
+      screenshotOnError: saveLogs,
+      saveTrace: saveLogs,
     });
 
     // Build fully resolved config: defaults ← overrides
@@ -63,8 +67,9 @@ export class CaliforniaEFileAutomation extends BaseCourtAutomation {
   protected async executeFilingProcess(_request: FilingRequest): Promise<FilingResult> {
     if (!this.page) throw new Error('Page not initialized');
 
+    const saveLogs = process.env.SAVE_LOGS !== 'false';
     const log = (msg: string) => console.log(msg);
-    const screenshot = createScreenshotHelper(this.page, log);
+    const screenshot = createScreenshotHelper(this.page, log, saveLogs);
     const updatePhase = (phase: number) => {
       if (this.jobId) jobStatusStore.updatePhase(this.jobId, phase);
     };
