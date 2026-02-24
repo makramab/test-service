@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { filingService } from './services/filing-service';
 import { FilingRequest } from './types/filing.types';
-import { CaliforniaEFileAutomation, CaliforniaEFileOverrides } from './courts/california-efile.automation';
+import { CaliforniaEFileAutomation, CaliforniaEFileOverrides } from './courts/california-efile/automation';
 import { randomUUID } from 'crypto';
 import { jobStatusStore } from './services/job-status-store';
 
@@ -56,6 +56,8 @@ app.post('/api/california-efile/file', (req: Request, res: Response) => {
   try {
     // Extract override data from request body
     const overrides: CaliforniaEFileOverrides = {
+      credentials: req.body.credentials,
+      caseConfig: req.body.caseConfig,
       partyData: req.body.partyData,
       defendantData: req.body.defendantData,
       filingData: req.body.filingData,
@@ -71,6 +73,8 @@ app.post('/api/california-efile/file', (req: Request, res: Response) => {
 
     // Log the request
     console.log(`[${jobId}] Received California eFile automation request`);
+    if (overrides.credentials) console.log(`[${jobId}] Credential overrides provided`);
+    if (overrides.caseConfig) console.log(`[${jobId}] Case config overrides provided`);
     if (overrides.partyData) console.log(`[${jobId}] Party data overrides provided`);
     if (overrides.defendantData) console.log(`[${jobId}] Defendant data overrides provided`);
     if (overrides.filingData) console.log(`[${jobId}] Filing data overrides provided`);

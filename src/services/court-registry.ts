@@ -1,7 +1,7 @@
 import { ICourtAutomation } from '../types/court-automation.interface';
 import { ExampleCourtAutomation } from '../courts/example-court.automation';
 import { GoogleFormTestAutomation } from '../courts/google-form-test.automation';
-import { CaliforniaEFileAutomation } from '../courts/california-efile.automation';
+import { CaliforniaEFileAutomation } from '../courts/california-efile/automation';
 
 /**
  * Registry for managing all available court automations
