@@ -74,7 +74,9 @@ export async function fillAutocomplete(
     await frame.click(`text=${selectText}`, { timeout: 5000 });
     log(`Selected "${selectText}" from dropdown`);
   } catch (_) {
-    await frame.locator(`text=/${selectText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/i`).first().click();
+    // Loose regex: split on non-word chars and join with .* for flexible matching
+    const looseRegex = selectText.split(/\W+/).filter(Boolean).join('.*');
+    await frame.locator(`text=/${looseRegex}/i`).first().click();
     log(`Selected "${selectText}" (regex fallback)`);
   }
 }

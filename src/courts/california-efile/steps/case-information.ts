@@ -1,8 +1,6 @@
 import { StepContext } from '../../../types/california-efile.types';
 import { SELECTORS } from '../selectors';
 import { clickWithFallback } from '../helpers/click';
-import { fillAutocomplete } from '../helpers/form';
-
 /**
  * Phase 2: Click Start Filing → Start New Case → fill court, category, type → navigate to Parties.
  */
@@ -35,9 +33,38 @@ export async function fillCaseInformation(ctx: StepContext): Promise<void> {
   log('Case Information page loaded');
   await screenshot('case-information');
 
-  // Fill Court Location (autocomplete)
+  // Fill Court Location (autocomplete) — exact pattern from working original
+  log(`Filling Court Location with "${caseConfig.courtLocation}"...`);
   await page.waitForTimeout(2000);
-  await fillAutocomplete(page, 'Court Location', caseConfig.courtLocation, caseConfig.courtLocationFull, log);
+
+  try {
+    const courtLocationInput = page.locator('input:near(:text("Court Location"))').first();
+    await courtLocationInput.fill(caseConfig.courtLocation, { timeout: 5000 });
+    log('Court Location filled (input field)');
+  } catch (_) {
+    try {
+      await page.selectOption('select:near(:text("Court Location"))', caseConfig.courtLocation, { timeout: 5000 });
+      log('Court Location filled (select element)');
+    } catch (_2) {
+      await page.fill('input[name*="location" i], input[name*="court" i]', caseConfig.courtLocation);
+      log('Court Location filled (by name attribute)');
+    }
+  }
+
+  // Wait for dropdown to populate, then select full option
+  await page.waitForTimeout(2000);
+
+  try {
+    await page.click(`text=${caseConfig.courtLocationFull}`, { timeout: 5000 });
+    log(`Selected "${caseConfig.courtLocationFull}" from dropdown`);
+  } catch (_) {
+    // Loose regex fallback: "Santa Clara" ... "Civil"
+    const parts = caseConfig.courtLocationFull.split(' - ');
+    const regex = parts.map(p => p.trim()).join('.*');
+    await page.locator(`text=/${regex}/i`).first().click();
+    log(`Selected "${caseConfig.courtLocationFull}" (regex fallback)`);
+  }
+
   await page.waitForTimeout(2000);
   await screenshot('after-court-selection');
 

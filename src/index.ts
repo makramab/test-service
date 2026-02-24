@@ -88,8 +88,8 @@ app.post('/api/california-efile/file', (req: Request, res: Response) => {
     // Execute automation in background (fire-and-forget)
     automation.file({
       courtId: 'california-efile',
-      caseType: 'small-claims',
-      caseData: {},
+      courtName: 'California eFile',
+      caseData: {} as any,
       documents: [],
     }).then((result) => {
       console.log(`[${jobId}] Automation completed successfully`);
