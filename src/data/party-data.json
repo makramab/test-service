@@ -1,0 +1,18 @@
+{
+  "partyType": "Person",
+  "iAmThisParty": true,
+  "firstName": "Irawati",
+  "middleName": "",
+  "lastName": "Puteri",
+  "dateOfBirth": "10/18/2001",
+  "phoneNumber": "6463884919",
+  "leadAttorney": "Pro Se",
+  "address": {
+    "country": "United States",
+    "addressLine1": "4218 74th St",
+    "addressLine2": "",
+    "city": "Elmhurst",
+    "state": "New York",
+    "zipCode": "11373"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "partyType": "Defendant",
+  "iAmThisParty": false,
+  "firstName": "Michael",
+  "middleName": "",
+  "lastName": "Anderson",
+  "dateOfBirth": "05/22/1985",
+  "phoneNumber": "4155551234",
+  "leadAttorney": "Pro Se",
+  "address": {
+    "country": "United States",
+    "addressLine1": "789 Market St",
+    "addressLine2": "Apt 5B",
+    "city": "San Jose",
+    "state": "California",
+    "zipCode": "95113"
+  }
+}
