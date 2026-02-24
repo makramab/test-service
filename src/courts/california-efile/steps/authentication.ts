@@ -11,8 +11,12 @@ export async function authenticate(ctx: StepContext): Promise<void> {
 
   // Navigate to landing page
   log('Navigating to California eFile...');
-  await page.goto(caseConfig.landingUrl, { waitUntil: 'networkidle', timeout: 60000 });
-  log('Landing page loaded');
+  await page.goto(caseConfig.landingUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  log('Landing page loaded, waiting for sign-in button...');
+
+  // Wait for the SPA to render the sign-in button
+  await page.waitForSelector(SELECTORS.auth.signInButton, { timeout: 60000, state: 'visible' });
+  log('Sign-in button visible');
 
   // Click "Sign in to your account"
   log('Clicking sign-in button...');
