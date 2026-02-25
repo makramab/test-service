@@ -28,7 +28,7 @@ export async function fillFilings(ctx: StepContext): Promise<void> {
   await page.waitForTimeout(2000);
   await screenshot('filing-modal');
 
-  // Fill Filing Code (autocomplete — exact match auto-registers on blur)
+  // Fill Filing Code (autocomplete — fill text, wait for dropdown, force-click option)
   log(`Filling Filing Code: ${filingData.filingCode}`);
   try {
     const label = page.locator('label:has-text("Filing Code")');
@@ -36,17 +36,30 @@ export async function fillFilings(ctx: StepContext): Promise<void> {
     if (count > 0) {
       const input = label.locator('..').locator('input').first();
       await input.fill(filingData.filingCode, { timeout: 5000 });
-      log('Filing Code text entered');
+      log('Filing Code text entered, waiting for dropdown...');
       await page.waitForTimeout(2000);
-      await input.press('Tab');
-      log('Filing Code confirmed (Tab blur)');
+
+      // Force-click the dropdown option (bypasses Forge visibility check)
+      const option = page.locator(`text="${filingData.filingCode}"`).first();
+      await option.click({ force: true, timeout: 5000 });
+      log('Filing Code selected from dropdown (force click)');
     }
   } catch (_) {
-    const input = page.locator('input[placeholder*="Filing Code" i]').first();
-    await input.fill(filingData.filingCode);
-    await page.waitForTimeout(2000);
-    await input.press('Tab');
-    log('Filing Code confirmed (placeholder fallback + Tab)');
+    // Fallback: try regex match with force click
+    log('Filing Code primary failed, trying regex fallback...');
+    try {
+      const escaped = filingData.filingCode.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      await page.locator(`text=/${escaped}/i`).first().click({ force: true, timeout: 5000 });
+      log('Filing Code selected (regex + force click)');
+    } catch (_2) {
+      // Last resort: fill + Tab
+      log('Filing Code dropdown failed, trying fill + Tab...');
+      const input = page.locator('input[placeholder*="Filing Code" i], label:has-text("Filing Code") input').first();
+      await input.fill(filingData.filingCode);
+      await page.waitForTimeout(2000);
+      await input.press('Tab');
+      log('Filing Code confirmed (fill + Tab fallback)');
+    }
   }
 
   await page.waitForTimeout(2000);
