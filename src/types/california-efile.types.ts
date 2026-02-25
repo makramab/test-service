@@ -7,11 +7,20 @@ export interface EFileCredentials {
 
 export interface CaseConfig {
   landingUrl: string;
+  /** County name extracted from litigation state (e.g. "San Mateo") */
+  county: string;
+  /** Court type from litigation state (e.g. "small_claims") */
+  courtType: string;
+  /** Claim amount used to select the correct Case Type tier */
+  claimAmount: number;
+  /** Payment account name (e.g. "Waiver") */
+  paymentAccount: string;
+
+  // Legacy fields — used as direct fallback when county is not in the court registry
   courtLocation: string;
   courtLocationFull: string;
   caseCategory: string;
   caseType: string;
-  paymentAccount: string;
 }
 
 export interface PartyAddress {

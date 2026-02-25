@@ -12,11 +12,15 @@ export function getDefaultConfig(): CaliforniaEFileConfig {
     },
     caseConfig: {
       landingUrl: 'https://california.tylertech.cloud/OfsEfsp/ui/landing',
+      county: 'Santa Clara',
+      courtType: 'small_claims',
+      claimAmount: 10000,
+      paymentAccount: 'Waiver',
+      // Legacy fallbacks (used when county is not in court registry)
       courtLocation: 'Santa Clara',
       courtLocationFull: 'Santa Clara - Civil',
       caseCategory: 'Small Claims',
       caseType: '5000',
-      paymentAccount: 'Waiver',
     },
     partyData: defaultPartyData as CaliforniaEFileConfig['partyData'],
     defendantData: defaultDefendantData as CaliforniaEFileConfig['defendantData'],
