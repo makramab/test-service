@@ -16,15 +16,35 @@ export async function fillFilings(ctx: StepContext): Promise<void> {
   log('Filings page loaded');
   await screenshot('filings-page');
 
-  // Click "Add Filing"
+  // Click "Add Filing" — try each strategy, but stop as soon as the modal opens
   await page.waitForTimeout(2000);
-  await clickWithFallback(page, [
-    { selector: SELECTORS.filings.addFilingButton, method: 'click', label: 'Add Filing' },
-    { selector: 'add filing', method: 'role', roleOptions: { name: /add filing/i }, label: 'Add Filing' },
-  ], log);
+  const addFilingStrategies = [
+    async () => { await page.click(SELECTORS.filings.addFilingButton, { timeout: 5000 }); log('Add Filing clicked (button selector)'); },
+    async () => { await page.getByRole('button', { name: /add filing/i }).click({ timeout: 5000 }); log('Add Filing clicked (role)'); },
+  ];
 
-  // Wait for Edit Filing Details modal
-  await page.waitForSelector(SELECTORS.filings.editFilingHeading, { timeout: 15000, state: 'visible' });
+  let modalOpened = false;
+  for (const strategy of addFilingStrategies) {
+    try {
+      await strategy();
+    } catch (e) {
+      log(`Add Filing click attempt failed: ${(e as Error).message?.slice(0, 80)}`);
+    }
+    // Check if the modal is now open — if so, stop trying
+    try {
+      await page.waitForSelector(SELECTORS.filings.editFilingHeading, { timeout: 5000, state: 'visible' });
+      modalOpened = true;
+      log('Edit Filing Details modal detected');
+      break;
+    } catch (_) {
+      // Modal not open yet, try next strategy
+    }
+  }
+
+  if (!modalOpened) {
+    throw new Error('Failed to open Edit Filing Details modal after all Add Filing click strategies');
+  }
+
   await page.waitForTimeout(2000);
   await screenshot('filing-modal');
 
