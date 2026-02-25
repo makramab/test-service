@@ -28,7 +28,7 @@ export async function fillFilings(ctx: StepContext): Promise<void> {
   await page.waitForTimeout(2000);
   await screenshot('filing-modal');
 
-  // Fill Filing Code (autocomplete dropdown — type, wait for options, click match)
+  // Fill Filing Code (autocomplete — exact match auto-registers on blur)
   log(`Filling Filing Code: ${filingData.filingCode}`);
   try {
     const label = page.locator('label:has-text("Filing Code")');
@@ -36,33 +36,17 @@ export async function fillFilings(ctx: StepContext): Promise<void> {
     if (count > 0) {
       const input = label.locator('..').locator('input').first();
       await input.fill(filingData.filingCode, { timeout: 5000 });
-      log('Filing Code text entered, waiting for dropdown...');
+      log('Filing Code text entered');
       await page.waitForTimeout(2000);
-
-      // Try to click the matching dropdown option
-      try {
-        await page.click(`text="${filingData.filingCode}"`, { timeout: 5000 });
-        log('Filing Code selected from dropdown');
-      } catch (_) {
-        // Regex fallback: match any option containing the filing code text
-        const escaped = filingData.filingCode.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        await page.locator(`text=/${escaped}/i`).first().click({ timeout: 5000 });
-        log('Filing Code selected from dropdown (regex fallback)');
-      }
+      await input.press('Tab');
+      log('Filing Code confirmed (Tab blur)');
     }
-  } catch (e) {
-    // Last resort: placeholder-based input + Enter
-    log(`Filing Code dropdown selection failed: ${e}. Trying placeholder fallback...`);
+  } catch (_) {
     const input = page.locator('input[placeholder*="Filing Code" i]').first();
     await input.fill(filingData.filingCode);
     await page.waitForTimeout(2000);
-    try {
-      await page.click(`text="${filingData.filingCode}"`, { timeout: 5000 });
-      log('Filing Code selected (placeholder + dropdown click)');
-    } catch (_) {
-      await input.press('Enter');
-      log('Filing Code filled (placeholder + Enter fallback)');
-    }
+    await input.press('Tab');
+    log('Filing Code confirmed (placeholder fallback + Tab)');
   }
 
   await page.waitForTimeout(2000);
