@@ -1,6 +1,33 @@
 import axios from 'axios';
+import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
+
+/**
+ * Convert a DOCX file to PDF using LibreOffice headless.
+ * Returns the path to the converted PDF file.
+ */
+export function convertDocxToPdf(
+  docxPath: string,
+  log: (msg: string) => void,
+): string {
+  const dir = path.dirname(docxPath);
+  const baseName = path.basename(docxPath, path.extname(docxPath));
+  const pdfPath = path.join(dir, `${baseName}.pdf`);
+
+  log(`Converting DOCX to PDF: ${path.basename(docxPath)}`);
+  execSync(
+    `libreoffice --headless --convert-to pdf --outdir "${dir}" "${docxPath}"`,
+    { timeout: 30000 },
+  );
+
+  if (!fs.existsSync(pdfPath)) {
+    throw new Error(`PDF conversion failed — expected output at ${pdfPath}`);
+  }
+
+  log(`Converted to PDF: ${path.basename(pdfPath)}`);
+  return pdfPath;
+}
 
 /**
  * Download a file from a URL to a temporary location.

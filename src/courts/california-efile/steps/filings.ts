@@ -1,7 +1,8 @@
+import * as path from 'path';
 import { StepContext } from '../../../types/california-efile.types';
 import { SELECTORS } from '../selectors';
 import { fillFieldByForAttr } from '../helpers/form';
-import { downloadFile, cleanupTempFile } from '../helpers/file';
+import { downloadFile, convertDocxToPdf, cleanupTempFile } from '../helpers/file';
 import { clickWithFallback } from '../helpers/click';
 
 /**
@@ -129,8 +130,17 @@ export async function fillFilings(ctx: StepContext): Promise<void> {
   // Upload lead document
   log('Starting document upload...');
   let downloadedPath: string | null = null;
+  let convertedPdfPath: string | null = null;
   try {
     downloadedPath = await downloadFile(documentData.leadDocument.url, documentData.leadDocument.filename, log);
+
+    // Convert DOCX to PDF if needed — Tyler eFile only accepts PDF
+    let uploadPath = downloadedPath;
+    const ext = path.extname(downloadedPath).toLowerCase();
+    if (ext === '.docx' || ext === '.doc') {
+      convertedPdfPath = convertDocxToPdf(downloadedPath, log);
+      uploadPath = convertedPdfPath;
+    }
 
     await page.evaluate('window.scrollBy(0, 400)');
     await page.waitForTimeout(1000);
@@ -139,8 +149,8 @@ export async function fillFilings(ctx: StepContext): Promise<void> {
     const fileInput = page.locator(SELECTORS.filings.fileInput).first();
     const count = await fileInput.count();
     if (count > 0) {
-      await fileInput.setInputFiles(downloadedPath);
-      log('File uploaded successfully');
+      await fileInput.setInputFiles(uploadPath);
+      log(`File uploaded successfully: ${path.basename(uploadPath)}`);
       await page.waitForTimeout(3000);
       await screenshot('after-upload');
     } else {
@@ -150,6 +160,7 @@ export async function fillFilings(ctx: StepContext): Promise<void> {
     log(`Error during file upload: ${error}`);
   } finally {
     cleanupTempFile(downloadedPath, log);
+    cleanupTempFile(convertedPdfPath, log);
   }
 
   // Save filing
