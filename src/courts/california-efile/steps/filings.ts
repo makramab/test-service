@@ -4,6 +4,7 @@ import { SELECTORS } from '../selectors';
 import { fillFieldByForAttr } from '../helpers/form';
 import { downloadFile, convertDocxToPdf, cleanupTempFile } from '../helpers/file';
 import { clickWithFallback } from '../helpers/click';
+import { lookupCourt } from '../court-registry';
 
 /**
  * Phase 4: Add filing details, upload document, save, skip to fees.
@@ -11,6 +12,11 @@ import { clickWithFallback } from '../helpers/click';
 export async function fillFilings(ctx: StepContext): Promise<void> {
   const { page, config, screenshot, log } = ctx;
   const { filingData, documentData } = config;
+
+  // Resolve filing code: court registry overrides the backend default
+  const courtEntry = lookupCourt(config.caseConfig.county);
+  const resolvedFilingCode = courtEntry?.filingCode ?? filingData.filingCode;
+  log(`Resolved Filing Code: "${resolvedFilingCode}" (source: ${courtEntry ? 'court registry' : 'backend default'})`);
 
   // Wait for Filings page
   await page.waitForSelector(SELECTORS.filings.noFilingsText, { timeout: 10000, state: 'visible' });
@@ -50,7 +56,7 @@ export async function fillFilings(ctx: StepContext): Promise<void> {
   await screenshot('filing-modal');
 
   // Fill Filing Code (autocomplete — type character by character to trigger Angular, then Tab)
-  log(`Filling Filing Code: ${filingData.filingCode}`);
+  log(`Filling Filing Code: ${resolvedFilingCode}`);
   try {
     const label = page.locator('label:has-text("Filing Code")');
     const count = await label.count();
@@ -58,7 +64,7 @@ export async function fillFilings(ctx: StepContext): Promise<void> {
       const input = label.locator('..').locator('input').first();
       await input.click({ timeout: 5000 });
       await input.clear();
-      await input.pressSequentially(filingData.filingCode, { delay: 30 });
+      await input.pressSequentially(resolvedFilingCode, { delay: 30 });
       log('Filing Code typed character by character');
       await page.waitForTimeout(2000);
       await input.press('Tab');
@@ -69,7 +75,7 @@ export async function fillFilings(ctx: StepContext): Promise<void> {
     // Fallback: try with fill + Tab
     try {
       const input = page.locator('label:has-text("Filing Code")').locator('..').locator('input').first();
-      await input.fill(filingData.filingCode, { timeout: 5000 });
+      await input.fill(resolvedFilingCode, { timeout: 5000 });
       await page.waitForTimeout(2000);
       await input.press('Tab');
       log('Filing Code confirmed (fill + Tab fallback)');

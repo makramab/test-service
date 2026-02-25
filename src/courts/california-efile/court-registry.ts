@@ -19,6 +19,8 @@ export interface CourtEntry {
   caseCategoryAutoFilled: boolean;
   /** Prefix to match Case Type dropdown options (e.g. "Small Claims") */
   caseTypePattern: string;
+  /** Court-specific Filing Code to select in the Filing Details modal */
+  filingCode: string;
 }
 
 export const COURT_REGISTRY: Record<string, CourtEntry> = {
@@ -27,12 +29,14 @@ export const COURT_REGISTRY: Record<string, CourtEntry> = {
     dropdownMatch: 'San Mateo - Redwood City - Small Claims',
     caseCategoryAutoFilled: true,
     caseTypePattern: 'Small Claims',
+    filingCode: "Plaintiff's Claim",
   },
   'santa clara': {
     searchTerm: 'Santa Clara',
     dropdownMatch: 'Santa Clara - Civil',
     caseCategoryAutoFilled: false,
     caseTypePattern: 'Small Claims',
+    filingCode: 'Small Claims AB 3088 Declaration',
   },
 };
 
